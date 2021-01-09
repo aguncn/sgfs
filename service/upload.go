@@ -1,7 +1,7 @@
 package service
 
 import (
-	"path"
+	//"path"
 	"strings"
 
 	"github.com/LinkinStars/golang-util/gu"
@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/LinkinStars/sgfs/config"
-	"github.com/LinkinStars/sgfs/util/date_util"
+	//"github.com/LinkinStars/sgfs/util/date_util"
 )
 
 func UploadFileHandler(ctx *fasthttp.RequestCtx) {
@@ -35,30 +35,33 @@ func UploadFileHandler(ctx *fasthttp.RequestCtx) {
 
 	// Check upload File Path
 	uploadSubPath := string(ctx.FormValue("uploadSubPath"))
-
-	visitPath := "/" + uploadSubPath + "/" + date_util.GetCurTimeFormat(date_util.YYYYMMDD)
-
+	// 注释掉， 之前加了日期目录
+	// visitPath := "/" + uploadSubPath + "/" + date_util.GetCurTimeFormat(date_util.YYYYMMDD)
+	visitPath := "/" + uploadSubPath
 	dirPath := config.GlobalConfig.UploadPath + visitPath
 	if err := gu.CreateDirIfNotExist(dirPath); err != nil {
 		zap.S().Error(err)
 		SendResponse(ctx, -1, "Failed to create folder.", nil)
 		return
 	}
-
-	suffix := path.Ext(header.Filename)
-
-	filename := createFileName(suffix)
+	// 注释掉，不要取什么后缀，直接取文件名
+	// suffix := path.Ext(header.Filename)
+	// filename := createFileName(suffix)
+	filename := header.Filename
 
 	fileAllPath := dirPath + "/" + filename
 
-	// Guarantee that the filename does not duplicate
-	for {
-		if !gu.CheckPathIfNotExist(fileAllPath) {
-			break
-		}
-		filename = createFileName(suffix)
-		fileAllPath = dirPath + "/" + filename
-	}
+	/*
+	   注释掉，有同名，就报错
+	   // Guarantee that the filename does not duplicate
+	   for {
+	       if !gu.CheckPathIfNotExist(fileAllPath) {
+	           break
+	       }
+	       filename = createFileName(suffix)
+	       fileAllPath = dirPath + "/" + filename
+	   }
+	*/
 
 	// Save file
 	if err := fasthttp.SaveMultipartFile(header, fileAllPath); err != nil {
@@ -70,7 +73,10 @@ func UploadFileHandler(ctx *fasthttp.RequestCtx) {
 	return
 }
 
+/*
+注释掉，不需要重命名文件
 func createFileName(suffix string) string {
-	// Date and Time + _ + Random Number + File Suffix
-	return date_util.GetCurTimeFormat(date_util.YYYYMMddHHmmss) + "_" + gu.GenerateRandomNumber(10) + suffix
+    // Date and Time + _ + Random Number + File Suffix
+    return date_util.GetCurTimeFormat(date_util.YYYYMMddHHmmss) + "_" + gu.GenerateRandomNumber(10) + suffix
 }
+*/
